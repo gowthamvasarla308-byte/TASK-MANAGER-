@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Manager</title>
+    <style>
+        body { font-family: Arial; text-align: center; }
+        input { padding: 10px; margin: 5px; }
+        button { padding: 10px; background: green; color: white; }
+        table { margin: auto; margin-top: 20px; border-collapse: collapse; }
+        td, th { border: 1px solid black; padding: 10px; }
+    </style>
+</head>
+<body>
+
+<h1>Task Manager</h1>
+
+<input type="text" id="task" placeholder="Enter Task">
+<button onclick="addTask()">Add</button>
+
+<table id="table">
+<tr><th>Task</th><th>Action</th></tr>
+</table>
+
+<script>
+function addTask() {
+    let task = document.getElementById("task").value;
+
+    fetch("/add", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({title: task})
+    }).then(() => loadTasks());
+}
+
+function loadTasks() {
+    fetch("/tasks")
+    .then(res => res.json())
+    .then(data => {
+        let table = document.getElementById("table");
+        table.innerHTML = "<tr><th>Task</th><th>Action</th></tr>";
+
+        data.forEach(t => {
+            let row = table.insertRow();
+            row.insertCell(0).innerHTML = t.title;
+            row.insertCell(1).innerHTML =
+                `<button onclick="deleteTask(${t.id})">Delete</button>`;
+        });
+    });
+}
+
+function deleteTask(id) {
+    fetch("/delete/" + id, {method: "DELETE"})
+    .then(() => loadTasks());
+}
+
+loadTasks();
+</script>
+
+</body>
+</html>
